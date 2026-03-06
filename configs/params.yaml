@@ -1,0 +1,59 @@
+simulator:
+  last_closest_idx: 0
+  max_data_length: 500 
+  target_velocity: 65 # Target velocity in m/s (constant)
+  raceline_path: './racelines/raceline_LS.csv' # raceline_KS ; raceline_Monza ; raceline_LS ; raceline_Monza
+  boundary_path: './boundaries/boundaries_LS.csv' # boundaries_KS ; boundaries_Monza ; boundaries_LS ; boundaries_Monza
+  dt: 0.1
+  max_time: 200.0  # Run for 100 seconds (1000 frames at 0.1s dt)
+  search_window: 10
+  num_points: 100
+  random_start_position: False
+  start_idx: 20
+  use_raceline_velocity: True # True if using raceline velocity, False if using target velocity
+  use_raceline_velocity_difficulty: 0.8 # Difficulty factor when using raceline velocity: 1.0 = same as raceline, < 1.0 = slower (easier)
+  freeze_on_violation: True  # Freeze animation on track violation or collision
+  obstacles:
+    obstacle_shape: 'ellipse' #'circle'
+    random_obstacle_position: False
+    num_obstacles: 4  # Number of obstacles for cartesian_kinematic_model_mpc.py 
+    circle_radius: 1.5   # radius in meters for cartesian_kinematic_model_mpc.py and for visualization
+    ellipse_width: 2.0 # Only for visualization, not used in the mpc calculations
+    ellipse_height: 6.0 # Only for visualization, not used in the mpc calculations
+    static_obstacles: False # Set to True to make obstacles static
+    max_velocity: 20.0
+    difficulty: 0.2  # Obstacle velocity factor when using raceline velocity: 1.0 = same as raceline, < 1.0 = slower (easier)
+    n_deviation: [0, 1, -1, 0]  # Lateral offset from raceline in Frenet frame (n coordinate) in meters. Positive = inner, negative = outer
+    obstacle_indices: [150, 159, 122, 302]  # Optional: list of raceline indices for obstacle placement (e.g., [100, 200, 300, 400])
+
+vehicle_models:
+  # Kinematic Model
+  kinematic_model:
+    initial_state:
+      initial_x: 39.99571770952385 #-65.0
+      initial_y: 134.39938322806904 #33.0
+      initial_yaw: -2.5
+      initial_velocity: 35.0
+      initial_slip_angle: 0.0
+    wheel_base: 2.96
+
+acados_miqp_mpc_params:
+  obstacles_on: True # Set to True to enable obstacles
+  miqp:
+    use_miqp: True # Set to True to use MIQP for the MPC
+    safety_margin_lat: 2.5
+    safety_margin_lon: 2
+    smoothness_weight: 100.0
+    deviation_weight: 1.0
+    big_M: 2000.0
+    planning_horizon: 150 # should be greater than the horizon of the frenet_mpc
+    stability_weight: 1.0
+    obstacle_slack_penalty: 50000.0
+  frenet_mpc:
+    Ts: 0.10 # Sampling time [s] - must match simulator dt for proper timing
+    T_horizon: 20 # Prediction horizon time steps
+    R: [0.010, 8.0] # Control cost vector [2x1] - [throttle, steering_rate] - heavily penalize steering_rate 
+    Q: [0,150,0.0,2.5,0.0] # State cost vector [5x1] - [s, n, e, v, delta]
+    gamma: 0.5 # CBF parameter
+    max_alat: 25.0 # Max lateral acceleration limit
+    delta_limit: 0.25 # Steering angle limit

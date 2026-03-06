@@ -1,0 +1,8 @@
+casadi==3.6.7
+matplotlib==3.5.1
+numpy>=1.22.4,<2.0
+pandas==2.2.3
+scipy==1.8.0
+PyYAML
+gurobipy
+torch
